@@ -1,0 +1,302 @@
+{
+  "info": {
+    "name": "🏫 École Primaire API",
+    "description": "Collection Postman - Backend de gestion d'école primaire",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🏛️ Classes",
+      "item": [
+        {
+          "name": "GET - Toutes les classes",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/classes",
+            "description": "Retourne la liste de toutes les classes"
+          }
+        },
+        {
+          "name": "GET - Une classe par ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/classes/1",
+            "description": "Retourne la classe avec l'id 1"
+          }
+        },
+        {
+          "name": "POST - Créer une classe",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/classes",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"libelle\": \"CP\"\n}"
+            },
+            "description": "Crée une nouvelle classe"
+          }
+        },
+        {
+          "name": "PUT - Modifier une classe",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/classes/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"libelle\": \"CE1\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE - Supprimer une classe",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/classes/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📚 Matières",
+      "item": [
+        {
+          "name": "GET - Toutes les matières",
+          "request": { "method": "GET", "url": "{{baseUrl}}/matieres" }
+        },
+        {
+          "name": "GET - Une matière par ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/matieres/1" }
+        },
+        {
+          "name": "GET - Matières d'une classe",
+          "request": { "method": "GET", "url": "{{baseUrl}}/matieres/classe/1" }
+        },
+        {
+          "name": "POST - Créer une matière",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/matieres",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Mathématiques\",\n  \"id_classe\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT - Modifier une matière",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/matieres/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Français\",\n  \"id_classe\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE - Supprimer une matière",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/matieres/1" }
+        }
+      ]
+    },
+    {
+      "name": "🔑 Admins",
+      "item": [
+        {
+          "name": "GET - Tous les admins",
+          "request": { "method": "GET", "url": "{{baseUrl}}/admins" }
+        },
+        {
+          "name": "GET - Un admin par ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/admins/1" }
+        },
+        {
+          "name": "POST - Créer un admin",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/admins",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Dupont\",\n  \"prenoms\": \"Marie Claire\",\n  \"numero\": \"+225 07 00 00 00\",\n  \"email\": \"admin@ecole.ci\",\n  \"adress\": \"Abidjan Plateau\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT - Modifier un admin",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/admins/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Dupont\",\n  \"prenoms\": \"Marie\",\n  \"numero\": \"+225 07 11 22 33\",\n  \"email\": \"admin2@ecole.ci\",\n  \"adress\": \"Abidjan Cocody\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE - Supprimer un admin",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/admins/1" }
+        }
+      ]
+    },
+    {
+      "name": "🎒 Élèves",
+      "item": [
+        {
+          "name": "GET - Tous les élèves",
+          "request": { "method": "GET", "url": "{{baseUrl}}/eleves" }
+        },
+        {
+          "name": "GET - Un élève par ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/eleves/1" }
+        },
+        {
+          "name": "GET - Élèves d'une classe",
+          "request": { "method": "GET", "url": "{{baseUrl}}/eleves/classe/1" }
+        },
+        {
+          "name": "POST - Inscrire un élève",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/eleves",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Koné\",\n  \"prenoms\": \"Ibrahim\",\n  \"numero_pere\": \"+225 07 99 88 77\",\n  \"email_pere\": \"pere.kone@gmail.com\",\n  \"adress\": \"Abidjan Yopougon\",\n  \"date_naissance\": \"2015-03-12\",\n  \"lieu_naissance\": \"Abidjan\",\n  \"sexe\": \"M\",\n  \"id_classe\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT - Modifier un élève",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/eleves/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Koné\",\n  \"prenoms\": \"Ibrahim Junior\",\n  \"id_classe\": 2\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE - Supprimer un élève",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/eleves/1" }
+        }
+      ]
+    },
+    {
+      "name": "👩‍🏫 Professeurs",
+      "item": [
+        {
+          "name": "GET - Tous les profs",
+          "request": { "method": "GET", "url": "{{baseUrl}}/profs" }
+        },
+        {
+          "name": "GET - Un prof par ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/profs/1" }
+        },
+        {
+          "name": "GET - Profs d'une classe",
+          "request": { "method": "GET", "url": "{{baseUrl}}/profs/classe/1" }
+        },
+        {
+          "name": "POST - Créer un prof",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/profs",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Kouassi\",\n  \"prenoms\": \"Jean Paul\",\n  \"numero\": \"+225 05 11 22 33\",\n  \"email\": \"jkouassi@ecole.ci\",\n  \"adress\": \"Abidjan Adjamé\",\n  \"id_classe\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT - Modifier un prof",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/profs/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Kouassi\",\n  \"prenoms\": \"Jean\",\n  \"numero\": \"+225 05 99 88 77\",\n  \"email\": \"jkouassi@ecole.ci\",\n  \"adress\": \"Abidjan Plateau\",\n  \"id_classe\": 2\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE - Supprimer un prof",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/profs/1" }
+        }
+      ]
+    },
+    {
+      "name": "📝 Notes",
+      "item": [
+        {
+          "name": "GET - Toutes les notes",
+          "request": { "method": "GET", "url": "{{baseUrl}}/notes" }
+        },
+        {
+          "name": "GET - Une note par ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/notes/1" }
+        },
+        {
+          "name": "GET - Notes d'un élève",
+          "request": { "method": "GET", "url": "{{baseUrl}}/notes/eleve/1" }
+        },
+        {
+          "name": "GET - Notes d'une matière",
+          "request": { "method": "GET", "url": "{{baseUrl}}/notes/matiere/1" }
+        },
+        {
+          "name": "GET - Bulletin d'un élève ⭐",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/notes/bulletin/1",
+            "description": "Retourne toutes les notes de l'élève 1 avec sa moyenne générale"
+          }
+        },
+        {
+          "name": "POST - Ajouter une note",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/notes",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"valeur\": 15.5,\n  \"id_eleve\": 1,\n  \"id_matiere\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT - Modifier une note",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/notes/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"valeur\": 18.0\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE - Supprimer une note",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/notes/1" }
+        }
+      ]
+    }
+  ]
+}
