@@ -8,7 +8,9 @@
 CREATE DATABASE IF NOT EXISTS ecole_primaire
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
-
+CREATE USER ecole_user@localhost IDENTIFIED BY 'ecole';
+GRANT ALL PRIVILEGES ON ecole_primaire.* TO ecole_user@localhost;
+FLUSH PRIVILEGES;
 USE ecole_primaire;
 
 -- ── Table : classe ──────────────────────────
