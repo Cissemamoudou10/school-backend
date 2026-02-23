@@ -29,7 +29,7 @@ const ClasseModel = {
   findById: async (id) => {
     // TODO : Écrire la requête SQL avec un paramètre id
     // TODO : Retourner uniquement le premier résultat (rows[0])
-    throw new Error("Non implémenté");
+    return "test"
   },
 
   /**
