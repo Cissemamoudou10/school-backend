@@ -1,69 +1,72 @@
-// ============================================
-//  CONTRÔLEUR : ADMIN
-//  Fichier : src/controllers/admin.controller.js
-// ============================================
-
 const AdminModel = require("../models/admin.model");
 
 const AdminController = {
-
-  /**
-   * GET /api/admins
-   * Retourne la liste de tous les administrateurs.
-   */
   getAllAdmins: async (req, res) => {
-    // TODO : Appeler AdminModel.findAll()
-    // TODO : Répondre 200 avec la liste
-    throw new Error("Non implémenté");
+    try {
+      console.log("Récupération de tous les administrateurs..."); 
+      const admins = await AdminModel.findAll();
+      res.status(200).json(admins);
+      console.log("Récupération des administrateurs terminée.", admins);
+    } catch (error) {
+      res.status(500).json({ message: "Erreur lors de la récupération", error: error.message });
+    }
+    
   },
 
-  /**
-   * GET /api/admins/:id
-   * Retourne un admin par son id.
-   */
   getAdminById: async (req, res) => {
-    // TODO : Extraire id de req.params
-    // TODO : Appeler AdminModel.findById(id)
-    // TODO : 404 si non trouvé
-    throw new Error("Non implémenté");
+    try {
+      const { id } = req.params;
+      const admin = await AdminModel.findById(id);
+      if (!admin) return res.status(404).json({ message: "Administrateur non trouvé" });
+      res.status(200).json(admin);
+    } catch (error) {
+      res.status(500).json({ message: "Erreur serveur", error: error.message });
+    }
   },
 
-  /**
-   * POST /api/admins
-   * Crée un nouvel administrateur.
-   * Body attendu : { nom, prenoms, numero, email, adress }
-   */
   createAdmin: async (req, res) => {
-    // TODO : Extraire et valider les champs de req.body
-    // TODO : Vérifier si l'email existe déjà (AdminModel.findByEmail) → 409 si oui
-    // TODO : Appeler AdminModel.create(data)
-    // TODO : Répondre 201
-    throw new Error("Non implémenté");
+    try {
+      const { nom, prenoms, email } = req.body;
+
+      // Validation minimale
+      if (!nom || !prenoms || !email) {
+        return res.status(400).json({ message: "Nom, prénoms et email sont obligatoires" });
+      }
+
+      // Vérification unicité email
+      const existing = await AdminModel.findByEmail(email);
+      if (existing) return res.status(409).json({ message: "Cet email est déjà utilisé" });
+
+      const newAdmin = await AdminModel.create(req.body);
+      res.status(201).json(newAdmin);
+    } catch (error) {
+      res.status(500).json({ message: "Erreur lors de la création", error: error.message });
+    }
   },
 
-  /**
-   * PUT /api/admins/:id
-   * Met à jour un administrateur.
-   * Body attendu : { nom, prenoms, numero, email, adress }
-   */
   updateAdmin: async (req, res) => {
-    // TODO : Extraire id et body
-    // TODO : Vérifier existence → 404
-    // TODO : Appeler AdminModel.update(id, data)
-    // TODO : Répondre 200
-    throw new Error("Non implémenté");
+    try {
+      const { id } = req.params;
+      const adminExists = await AdminModel.findById(id);
+      if (!adminExists) return res.status(404).json({ message: "Administrateur introuvable" });
+
+      const updatedAdmin = await AdminModel.update(id, req.body);
+      res.status(200).json(updatedAdmin);
+    } catch (error) {
+      res.status(500).json({ message: "Erreur lors de la mise à jour", error: error.message });
+    }
   },
 
-  /**
-   * DELETE /api/admins/:id
-   * Supprime un administrateur.
-   */
   deleteAdmin: async (req, res) => {
-    // TODO : Extraire id
-    // TODO : Vérifier existence → 404
-    // TODO : Appeler AdminModel.delete(id)
-    // TODO : Répondre 200 avec message de confirmation
-    throw new Error("Non implémenté");
+    try {
+      const { id } = req.params;
+      const deleted = await AdminModel.delete(id);
+      if (!deleted) return res.status(404).json({ message: "Administrateur introuvable" });
+      
+      res.status(200).json({ message: `L'administrateur #${id} a été supprimé avec succès` });
+    } catch (error) {
+      res.status(500).json({ message: "Erreur lors de la suppression", error: error.message });
+    }
   },
 };
 

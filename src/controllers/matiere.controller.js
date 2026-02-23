@@ -13,9 +13,19 @@ const MatiereController = {
    * Retourne toutes les matières.
    */
   getAllMatieres: async (req, res) => {
-    // TODO : Appeler MatiereModel.findAll()
-    // TODO : Répondre 200 avec la liste
-    throw new Error("Non implémenté");
+    try {
+      const matieres = await MatiereModel.findAll();
+      return res.status(200).json({
+        success: true,
+        data: matieres,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Erreur lors de la récupération des matières.",
+        error: error.message,
+      });
+    }
   },
 
   /**
@@ -23,10 +33,28 @@ const MatiereController = {
    * Retourne une matière par son id.
    */
   getMatiereById: async (req, res) => {
-    // TODO : Extraire id de req.params
-    // TODO : Appeler MatiereModel.findById(id)
-    // TODO : 404 si non trouvée
-    throw new Error("Non implémenté");
+    try {
+      const { id } = req.params;
+
+      const matiere = await MatiereModel.findById(id);
+      if (!matiere) {
+        return res.status(404).json({
+          success: false,
+          message: `Matière avec l'id ${id} introuvable.`,
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: matiere,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Erreur lors de la récupération de la matière.",
+        error: error.message,
+      });
+    }
   },
 
   /**
@@ -34,11 +62,30 @@ const MatiereController = {
    * Retourne toutes les matières d'une classe donnée.
    */
   getMatieresByClasse: async (req, res) => {
-    // TODO : Extraire idClasse de req.params
-    // TODO : Vérifier que la classe existe (ClasseModel.findById) → 404 si non
-    // TODO : Appeler MatiereModel.findByClasse(idClasse)
-    // TODO : Répondre 200 avec la liste
-    throw new Error("Non implémenté");
+    try {
+      const { idClasse } = req.params;
+
+      // Vérifier que la classe existe
+      const classe = await ClasseModel.findById(idClasse);
+      if (!classe) {
+        return res.status(404).json({
+          success: false,
+          message: `Classe avec l'id ${idClasse} introuvable.`,
+        });
+      }
+
+      const matieres = await MatiereModel.findByClasse(idClasse);
+      return res.status(200).json({
+        success: true,
+        data: matieres,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Erreur lors de la récupération des matières de la classe.",
+        error: error.message,
+      });
+    }
   },
 
   /**
@@ -47,11 +94,39 @@ const MatiereController = {
    * Body attendu : { nom, id_classe }
    */
   createMatiere: async (req, res) => {
-    // TODO : Extraire et valider nom et id_classe depuis req.body
-    // TODO : Vérifier que la classe existe (ClasseModel.findById)
-    // TODO : Appeler MatiereModel.create(data)
-    // TODO : Répondre 201
-    throw new Error("Non implémenté");
+    try {
+      const { nom, id_classe } = req.body;
+
+      // Validation des champs obligatoires
+      if (!nom || !id_classe) {
+        return res.status(400).json({
+          success: false,
+          message: "Les champs 'nom' et 'id_classe' sont obligatoires.",
+        });
+      }
+
+      // Vérifier que la classe existe
+      const classe = await ClasseModel.findById(id_classe);
+      if (!classe) {
+        return res.status(404).json({
+          success: false,
+          message: `Classe avec l'id ${id_classe} introuvable.`,
+        });
+      }
+
+      const result = await MatiereModel.create({ nom, id_classe });
+      return res.status(201).json({
+        success: true,
+        message: "Matière créée avec succès.",
+        data: { id: result.insertId, nom, id_classe },
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Erreur lors de la création de la matière.",
+        error: error.message,
+      });
+    }
   },
 
   /**
@@ -60,21 +135,80 @@ const MatiereController = {
    * Body attendu : { nom, id_classe }
    */
   updateMatiere: async (req, res) => {
-    // TODO : Extraire id et data
-    // TODO : Vérifier existence matière → 404 si non
-    // TODO : Appeler MatiereModel.update(id, data)
-    throw new Error("Non implémenté");
+    try {
+      const { id } = req.params;
+      const { nom, id_classe } = req.body;
+
+      // Validation des champs obligatoires
+      if (!nom || !id_classe) {
+        return res.status(400).json({
+          success: false,
+          message: "Les champs 'nom' et 'id_classe' sont obligatoires.",
+        });
+      }
+
+      // Vérifier que la matière existe
+      const matiere = await MatiereModel.findById(id);
+      if (!matiere) {
+        return res.status(404).json({
+          success: false,
+          message: `Matière avec l'id ${id} introuvable.`,
+        });
+      }
+
+      // Vérifier que la nouvelle classe existe
+      const classe = await ClasseModel.findById(id_classe);
+      if (!classe) {
+        return res.status(404).json({
+          success: false,
+          message: `Classe avec l'id ${id_classe} introuvable.`,
+        });
+      }
+
+      await MatiereModel.update(id, { nom, id_classe });
+      return res.status(200).json({
+        success: true,
+        message: "Matière mise à jour avec succès.",
+        data: { id: Number(id), nom, id_classe },
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Erreur lors de la mise à jour de la matière.",
+        error: error.message,
+      });
+    }
   },
 
   /**
    * DELETE /api/matieres/:id
-   * Supprime une matière.
+   * Supprime une matière (et ses notes en CASCADE).
    */
   deleteMatiere: async (req, res) => {
-    // TODO : Extraire id
-    // TODO : Vérifier existence → 404
-    // TODO : Appeler MatiereModel.delete(id)
-    throw new Error("Non implémenté");
+    try {
+      const { id } = req.params;
+
+      // Vérifier que la matière existe
+      const matiere = await MatiereModel.findById(id);
+      if (!matiere) {
+        return res.status(404).json({
+          success: false,
+          message: `Matière avec l'id ${id} introuvable.`,
+        });
+      }
+
+      await MatiereModel.delete(id);
+      return res.status(200).json({
+        success: true,
+        message: "Matière supprimée avec succès. Les notes associées ont également été supprimées.",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Erreur lors de la suppression de la matière.",
+        error: error.message,
+      });
+    }
   },
 };
 
