@@ -11,11 +11,15 @@ const MatiereModel = {
   /**
    * Récupère toutes les matières avec le libellé de leur classe.
    * @returns {Promise<Array>} - Liste des matières
-   * @example SELECT m.*, c.libelle AS classe FROM matiere m JOIN classe c ON m.id_classe = c.id
    */
   findAll: async () => {
-    // TODO : Écrire la requête SQL avec une jointure sur la table classe
-    throw new Error("Non implémenté");
+    const [rows] = await pool.query(`
+      SELECT m.*, c.libelle AS classe
+      FROM matiere m
+      LEFT JOIN classe c ON m.id_classe = c.id
+      ORDER BY c.libelle, m.nom
+    `);
+    return rows;
   },
 
   /**
@@ -24,19 +28,29 @@ const MatiereModel = {
    * @returns {Promise<Object|null>} - La matière ou null
    */
   findById: async (id) => {
-    // TODO : Requête SELECT avec WHERE id = ?
-    throw new Error("Non implémenté");
+    const [rows] = await pool.query(`
+      SELECT m.*, c.libelle AS classe
+      FROM matiere m
+      LEFT JOIN classe c ON m.id_classe = c.id
+      WHERE m.id = ?
+    `, [id]);
+    return rows[0] || null;
   },
 
   /**
    * Récupère toutes les matières d'une classe donnée.
    * @param {number} idClasse - L'identifiant de la classe
    * @returns {Promise<Array>} - Liste des matières de la classe
-   * @example SELECT * FROM matiere WHERE id_classe = ?
    */
   findByClasse: async (idClasse) => {
-    // TODO : Filtrer les matières par id_classe
-    throw new Error("Non implémenté");
+    const [rows] = await pool.query(`
+      SELECT m.*, c.libelle AS classe
+      FROM matiere m
+      LEFT JOIN classe c ON m.id_classe = c.id
+      WHERE m.id_classe = ?
+      ORDER BY m.nom
+    `, [idClasse]);
+    return rows;
   },
 
   /**
@@ -45,9 +59,12 @@ const MatiereModel = {
    * @returns {Promise<Object>} - Résultat de l'insertion
    */
   create: async (data) => {
-    // TODO : Déstructurer data ({ nom, id_classe })
-    // TODO : Écrire la requête INSERT
-    throw new Error("Non implémenté");
+    const { nom, id_classe } = data;
+    const [result] = await pool.query(`
+      INSERT INTO matiere (nom, id_classe)
+      VALUES (?, ?)
+    `, [nom, id_classe]);
+    return result;
   },
 
   /**
@@ -57,8 +74,13 @@ const MatiereModel = {
    * @returns {Promise<Object>} - Résultat de la mise à jour
    */
   update: async (id, data) => {
-    // TODO : Écrire la requête UPDATE
-    throw new Error("Non implémenté");
+    const { nom, id_classe } = data;
+    const [result] = await pool.query(`
+      UPDATE matiere
+      SET nom = ?, id_classe = ?
+      WHERE id = ?
+    `, [nom, id_classe, id]);
+    return result;
   },
 
   /**
@@ -67,8 +89,10 @@ const MatiereModel = {
    * @returns {Promise<Object>} - Résultat de la suppression
    */
   delete: async (id) => {
-    // TODO : Écrire la requête DELETE
-    throw new Error("Non implémenté");
+    const [result] = await pool.query(`
+      DELETE FROM matiere WHERE id = ?
+    `, [id]);
+    return result;
   },
 };
 
