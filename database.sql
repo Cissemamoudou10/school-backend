@@ -5,12 +5,20 @@
 --                et de toutes les tables
 -- ============================================
 
-CREATE DATABASE IF NOT EXISTS ecole_primaire
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-CREATE USER ecole_user@localhost IDENTIFIED BY 'ecole';
-GRANT ALL PRIVILEGES ON ecole_primaire.* TO ecole_user@localhost;
+-- 1. Création de la base
+CREATE DATABASE IF NOT EXISTS ecole_primaire 
+CHARACTER SET utf8mb4 
+COLLATE utf8mb4_unicode_ci;
+
+-- 2. Suppression et recréation propre de l'utilisateur
+DROP USER IF EXISTS 'ecole_user'@'localhost';
+CREATE USER 'ecole_user'@'localhost' IDENTIFIED BY 'ecole';
+
+-- 3. Attribution des droits
+GRANT ALL PRIVILEGES ON ecole_primaire.* TO 'ecole_user'@'localhost';
 FLUSH PRIVILEGES;
+
+-- 4. Utilisation et création de table
 USE ecole_primaire;
 
 -- ── Table : classe ──────────────────────────
