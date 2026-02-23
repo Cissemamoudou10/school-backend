@@ -21,7 +21,7 @@ router.get("/", ClasseController.getAllClasses);
  * @access  Public
  */
 router.get("/:id", ClasseController.getClasseById);
-
+//modification de la route pour éviter les conflits avec les autres routes (ex: /api/classes/1 vs /api/classes/1/eleves)
 /**
  * @route   POST /api/classes
  * @desc    Créer une nouvelle classe
