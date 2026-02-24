@@ -1,73 +1,42 @@
-// ============================================
-//  MODÈLE : ADMIN
-//  Fichier : src/models/admin.model.js
-//  Table   : admin(id, nom, prenoms, numero, email, adress, date_creation)
-// ============================================
-
 const { pool } = require("../config/db");
 
 const AdminModel = {
-
-  /**
-   * Récupère tous les administrateurs.
-   * @returns {Promise<Array>} - Liste des admins
-   */
   findAll: async () => {
-    // TODO : SELECT * FROM admin
-    throw new Error("Non implémenté");
+    const [rows] = await pool.query("SELECT * FROM admin ORDER BY date_creation DESC");
+    return rows;
   },
 
-  /**
-   * Récupère un admin par son identifiant.
-   * @param {number} id
-   * @returns {Promise<Object|null>}
-   */
   findById: async (id) => {
-    // TODO : SELECT * FROM admin WHERE id = ?
-    throw new Error("Non implémenté");
+    const [rows] = await pool.query("SELECT * FROM admin WHERE id = ?", [id]);
+    return rows[0] || null;
   },
 
-  /**
-   * Récupère un admin par son email (utile pour l'authentification).
-   * @param {string} email
-   * @returns {Promise<Object|null>}
-   */
   findByEmail: async (email) => {
-    // TODO : SELECT * FROM admin WHERE email = ?
-    throw new Error("Non implémenté");
+    const [rows] = await pool.query("SELECT * FROM admin WHERE email = ?", [email]);
+    return rows[0] || null;
   },
 
-  /**
-   * Crée un nouvel administrateur.
-   * @param {Object} data - { nom, prenoms, numero, email, adress }
-   * @returns {Promise<Object>} - Résultat de l'insertion
-   */
   create: async (data) => {
-    // TODO : Déstructurer data
-    // TODO : date_creation sera NOW() dans la requête SQL
-    // TODO : INSERT INTO admin (nom, prenoms, numero, email, adress, date_creation) VALUES (?, ?, ?, ?, ?, NOW())
-    throw new Error("Non implémenté");
+    const { nom, prenoms, numero, email, adress } = data;
+    const [result] = await pool.query(
+      "INSERT INTO admin (nom, prenoms, numero, email, adress, date_creation) VALUES (?, ?, ?, ?, ?, NOW())",
+      [nom, prenoms, numero, email, adress]
+    );
+    return { id: result.insertId, ...data };
   },
 
-  /**
-   * Met à jour un administrateur.
-   * @param {number} id
-   * @param {Object} data - { nom, prenoms, numero, email, adress }
-   * @returns {Promise<Object>}
-   */
   update: async (id, data) => {
-    // TODO : UPDATE admin SET nom=?, prenoms=?, ... WHERE id=?
-    throw new Error("Non implémenté");
+    const { nom, prenoms, numero, email, adress } = data;
+    await pool.query(
+      "UPDATE admin SET nom=?, prenoms=?, numero=?, email=?, adress=? WHERE id=?",
+      [nom, prenoms, numero, email, adress, id]
+    );
+    return { id, ...data };
   },
 
-  /**
-   * Supprime un administrateur.
-   * @param {number} id
-   * @returns {Promise<Object>}
-   */
   delete: async (id) => {
-    // TODO : DELETE FROM admin WHERE id = ?
-    throw new Error("Non implémenté");
+    const [result] = await pool.query("DELETE FROM admin WHERE id = ?", [id]);
+    return result.affectedRows > 0;
   },
 };
 

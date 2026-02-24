@@ -8,96 +8,93 @@ const { pool } = require("../config/db");
 
 const NoteModel = {
 
-  /**
-   * Récupère toutes les notes avec le nom de l'élève et de la matière.
-   * @returns {Promise<Array>}
-   * @example
-   * SELECT n.*, e.nom AS eleve, m.nom AS matiere
-   * FROM note n
-   * JOIN eleve e ON n.id_eleve = e.id
-   * JOIN matiere m ON n.id_matiere = m.id
-   */
+  // Toutes les notes avec nom élève et matière
   findAll: async () => {
-    // TODO : Requête avec double JOIN (eleve + matiere)
-    throw new Error("Non implémenté");
+    const [rows] = await pool.query(`
+      SELECT n.id, n.valeur,
+             n.id_eleve, CONCAT(e.nom, ' ', e.prenoms) AS eleve,
+             n.id_matiere, m.nom AS matiere
+      FROM note n
+      JOIN eleve   e ON n.id_eleve   = e.id
+      JOIN matiere m ON n.id_matiere = m.id
+      ORDER BY n.id
+    `);
+    return rows;
   },
 
-  /**
-   * Récupère une note par son identifiant.
-   * @param {number} id
-   * @returns {Promise<Object|null>}
-   */
+  // Une note par ID
   findById: async (id) => {
-    // TODO : SELECT avec JOIN WHERE n.id = ?
-    throw new Error("Non implémenté");
+    const [rows] = await pool.query(`
+      SELECT n.id, n.valeur,
+             n.id_eleve, CONCAT(e.nom, ' ', e.prenoms) AS eleve,
+             n.id_matiere, m.nom AS matiere
+      FROM note n
+      JOIN eleve   e ON n.id_eleve   = e.id
+      JOIN matiere m ON n.id_matiere = m.id
+      WHERE n.id = ?
+    `, [id]);
+    return rows[0] ?? null;
   },
 
-  /**
-   * Récupère toutes les notes d'un élève.
-   * @param {number} idEleve
-   * @returns {Promise<Array>}
-   */
+  // Notes d'un élève
   findByEleve: async (idEleve) => {
-    // TODO : SELECT n.*, m.nom AS matiere FROM note n
-    //        JOIN matiere m ON n.id_matiere = m.id
-    //        WHERE n.id_eleve = ?
-    throw new Error("Non implémenté");
+    const [rows] = await pool.query(`
+      SELECT n.id, n.valeur,
+             n.id_matiere, m.nom AS matiere
+      FROM note n
+      JOIN matiere m ON n.id_matiere = m.id
+      WHERE n.id_eleve = ?
+      ORDER BY m.nom
+    `, [idEleve]);
+    return rows;
   },
 
-  /**
-   * Récupère toutes les notes d'une matière.
-   * @param {number} idMatiere
-   * @returns {Promise<Array>}
-   */
+  // Notes d'une matière
   findByMatiere: async (idMatiere) => {
-    // TODO : Filtrer par id_matiere avec JOIN sur eleve
-    throw new Error("Non implémenté");
+    const [rows] = await pool.query(`
+      SELECT n.id, n.valeur,
+             n.id_eleve, CONCAT(e.nom, ' ', e.prenoms) AS eleve
+      FROM note n
+      JOIN eleve e ON n.id_eleve = e.id
+      WHERE n.id_matiere = ?
+      ORDER BY e.nom, e.prenoms
+    `, [idMatiere]);
+    return rows;
   },
 
-  /**
-   * Calcule la moyenne de toutes les notes d'un élève (bulletin).
-   * Retourne les notes groupées par matière + la moyenne générale.
-   * @param {number} idEleve
-   * @returns {Promise<Object>} - { eleve, notes: [{matiere, valeur}], moyenne_generale }
-   */
+  // Bulletin d'un élève avec moyenne générale
   getBulletinByEleve: async (idEleve) => {
-    // TODO : Récupérer toutes les notes de l'élève (findByEleve)
-    // TODO : Calculer la somme des valeurs
-    // TODO : Diviser par le nombre de notes pour obtenir la moyenne
-    // TODO : Retourner un objet structuré { notes, moyenne_generale }
-    // ASTUCE : Vous pouvez utiliser AVG() directement en SQL ou calculer en JS
-    throw new Error("Non implémenté");
+    const notes = await NoteModel.findByEleve(idEleve);
+    let moyenne_generale = null;
+    if (notes.length > 0) {
+      const somme = notes.reduce((acc, n) => acc + parseFloat(n.valeur), 0);
+      moyenne_generale = parseFloat((somme / notes.length).toFixed(2));
+    }
+    return { notes, moyenne_generale };
   },
 
-  /**
-   * Crée une nouvelle note.
-   * @param {Object} data - { valeur, id_eleve, id_matiere }
-   * @returns {Promise<Object>}
-   */
+  // Créer une note
   create: async (data) => {
-    // TODO : INSERT INTO note (valeur, id_eleve, id_matiere) VALUES (?, ?, ?)
-    throw new Error("Non implémenté");
+    const { valeur, id_eleve, id_matiere } = data;
+    const [result] = await pool.query(
+      `INSERT INTO note (valeur, id_eleve, id_matiere) VALUES (?, ?, ?)`,
+      [valeur, id_eleve, id_matiere]
+    );
+    return await NoteModel.findById(result.insertId);
   },
 
-  /**
-   * Met à jour une note.
-   * @param {number} id
-   * @param {Object} data - { valeur }
-   * @returns {Promise<Object>}
-   */
+  // Mettre à jour une note
   update: async (id, data) => {
-    // TODO : UPDATE note SET valeur = ? WHERE id = ?
-    throw new Error("Non implémenté");
+    const { valeur } = data;
+    await pool.query(`UPDATE note SET valeur = ? WHERE id = ?`, [valeur, id]);
+    return await NoteModel.findById(id);
   },
 
-  /**
-   * Supprime une note.
-   * @param {number} id
-   * @returns {Promise<Object>}
-   */
+  // Supprimer une note
   delete: async (id) => {
-    // TODO : DELETE FROM note WHERE id = ?
-    throw new Error("Non implémenté");
+    const note = await NoteModel.findById(id);
+    await pool.query(`DELETE FROM note WHERE id = ?`, [id]);
+    return note;
   },
 };
 
