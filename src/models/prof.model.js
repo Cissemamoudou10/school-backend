@@ -13,8 +13,22 @@ const ProfModel = {
    * @returns {Promise<Array>}
    */
   findAll: async () => {
-    // TODO : SELECT p.*, c.libelle AS classe FROM prof p JOIN classe c ON p.id_classe = c.id
-    throw new Error("Non implémenté");
+    const [rows] = await pool.query(`
+      SELECT 
+        p.id,
+        p.nom,
+        p.prenoms,
+        p.numero,
+        p.email,
+        p.adress,
+        p.date_creation,
+        p.id_classe,
+        c.libelle AS classe
+      FROM prof p
+      LEFT JOIN classe c ON p.id_classe = c.id
+      ORDER BY p.nom ASC
+    `);
+    return rows;
   },
 
   /**
@@ -23,8 +37,22 @@ const ProfModel = {
    * @returns {Promise<Object|null>}
    */
   findById: async (id) => {
-    // TODO : SELECT avec WHERE p.id = ?
-    throw new Error("Non implémenté");
+    const [rows] = await pool.query(`
+      SELECT 
+        p.id,
+        p.nom,
+        p.prenoms,
+        p.numero,
+        p.email,
+        p.adress,
+        p.date_creation,
+        p.id_classe,
+        c.libelle AS classe
+      FROM prof p
+      LEFT JOIN classe c ON p.id_classe = c.id
+      WHERE p.id = ?
+    `, [id]);
+    return rows.length > 0 ? rows[0] : null;
   },
 
   /**
@@ -33,8 +61,23 @@ const ProfModel = {
    * @returns {Promise<Array>}
    */
   findByClasse: async (idClasse) => {
-    // TODO : SELECT * FROM prof WHERE id_classe = ?
-    throw new Error("Non implémenté");
+    const [rows] = await pool.query(`
+      SELECT 
+        p.id,
+        p.nom,
+        p.prenoms,
+        p.numero,
+        p.email,
+        p.adress,
+        p.date_creation,
+        p.id_classe,
+        c.libelle AS classe
+      FROM prof p
+      LEFT JOIN classe c ON p.id_classe = c.id
+      WHERE p.id_classe = ?
+      ORDER BY p.nom ASC
+    `, [idClasse]);
+    return rows;
   },
 
   /**
@@ -43,8 +86,10 @@ const ProfModel = {
    * @returns {Promise<Object|null>}
    */
   findByEmail: async (email) => {
-    // TODO : SELECT * FROM prof WHERE email = ?
-    throw new Error("Non implémenté");
+    const [rows] = await pool.query(`
+      SELECT * FROM prof WHERE email = ?
+    `, [email]);
+    return rows.length > 0 ? rows[0] : null;
   },
 
   /**
@@ -53,9 +98,13 @@ const ProfModel = {
    * @returns {Promise<Object>}
    */
   create: async (data) => {
-    // TODO : INSERT INTO prof (nom, prenoms, numero, email, adress, id_classe, date_creation)
-    //        VALUES (?, ?, ?, ?, ?, ?, NOW())
-    throw new Error("Non implémenté");
+    const { nom, prenoms, numero, email, adress, id_classe } = data;
+    const [result] = await pool.query(`
+      INSERT INTO prof (nom, prenoms, numero, email, adress, id_classe, date_creation)
+      VALUES (?, ?, ?, ?, ?, ?, NOW())
+    `, [nom, prenoms, numero ?? null, email, adress ?? null, id_classe ?? null]);
+
+    return { id: result.insertId, ...data };
   },
 
   /**
@@ -65,8 +114,20 @@ const ProfModel = {
    * @returns {Promise<Object>}
    */
   update: async (id, data) => {
-    // TODO : UPDATE prof SET ... WHERE id = ?
-    throw new Error("Non implémenté");
+    const { nom, prenoms, numero, email, adress, id_classe } = data;
+    await pool.query(`
+      UPDATE prof
+      SET 
+        nom       = ?,
+        prenoms   = ?,
+        numero    = ?,
+        email     = ?,
+        adress    = ?,
+        id_classe = ?
+      WHERE id = ?
+    `, [nom, prenoms, numero ?? null, email, adress ?? null, id_classe ?? null, id]);
+
+    return { id, ...data };
   },
 
   /**
@@ -75,8 +136,10 @@ const ProfModel = {
    * @returns {Promise<Object>}
    */
   delete: async (id) => {
-    // TODO : DELETE FROM prof WHERE id = ?
-    throw new Error("Non implémenté");
+    const [result] = await pool.query(`
+      DELETE FROM prof WHERE id = ?
+    `, [id]);
+    return { deleted: result.affectedRows > 0 };
   },
 };
 
