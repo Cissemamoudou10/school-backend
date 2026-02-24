@@ -58,8 +58,7 @@ const MatiereModel = {
    * @param {Object} data - { nom, id_classe }
    * @returns {Promise<Object>} - Résultat de l'insertion
    */
-  create: async (data) => {
-    const { nom, id_classe } = data;
+  create: async ({ nom, id_classe }) => {
     const [result] = await pool.query(`
       INSERT INTO matiere (nom, id_classe)
       VALUES (?, ?)
@@ -73,8 +72,7 @@ const MatiereModel = {
    * @param {Object} data - { nom, id_classe }
    * @returns {Promise<Object>} - Résultat de la mise à jour
    */
-  update: async (id, data) => {
-    const { nom, id_classe } = data;
+  update: async (id, { nom, id_classe }) => {
     const [result] = await pool.query(`
       UPDATE matiere
       SET nom = ?, id_classe = ?

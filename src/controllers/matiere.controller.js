@@ -14,7 +14,9 @@ const MatiereController = {
    */
   getAllMatieres: async (req, res) => {
     try {
+      console.log("Recuperation de toutes les matières en cours...");
       const matieres = await MatiereModel.findAll();
+      console.log("Matieres récupérées :", matieres);
       return res.status(200).json({
         success: true,
         data: matieres,
@@ -96,7 +98,7 @@ const MatiereController = {
   createMatiere: async (req, res) => {
     try {
       const { nom, id_classe } = req.body;
-
+     
       // Validation des champs obligatoires
       if (!nom || !id_classe) {
         return res.status(400).json({
@@ -107,6 +109,7 @@ const MatiereController = {
 
       // Vérifier que la classe existe
       const classe = await ClasseModel.findById(id_classe);
+
       if (!classe) {
         return res.status(404).json({
           success: false,
@@ -156,7 +159,7 @@ const MatiereController = {
         });
       }
 
-      // Vérifier que la nouvelle classe existe
+      // Vérifier que la classe existe
       const classe = await ClasseModel.findById(id_classe);
       if (!classe) {
         return res.status(404).json({
@@ -200,7 +203,7 @@ const MatiereController = {
       await MatiereModel.delete(id);
       return res.status(200).json({
         success: true,
-        message: "Matière supprimée avec succès. Les notes associées ont également été supprimées.",
+        message: `Matière "${matiere.nom}" supprimée avec succès.`,
       });
     } catch (error) {
       return res.status(500).json({
