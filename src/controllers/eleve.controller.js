@@ -1,80 +1,82 @@
-// ============================================
-//  CONTRÔLEUR : ELEVE
-//  Fichier : src/controllers/eleve.controller.js
-// ============================================
-
-const EleveModel  = require("../models/eleve.model");
-const ClasseModel = require("../models/classe.model");
+const EleveModel = require("../models/eleve.model");
+// Note: Assure-toi que ClasseModel possède une méthode findById ou checkExists
+const ClasseModel = require("../models/classe.model"); 
 
 const EleveController = {
-
-  /**
-   * GET /api/eleves
-   * Retourne tous les élèves.
-   */
   getAllEleves: async (req, res) => {
-    // TODO : Appeler EleveModel.findAll()
-    // TODO : Répondre 200
-    throw new Error("Non implémenté");
+    try {
+      const eleves = await EleveModel.findAll();
+      res.status(200).json(eleves);
+    } catch (error) {
+      res.status(500).json({ message: "Erreur lors de la récupération", error: error.message });
+    }
   },
 
-  /**
-   * GET /api/eleves/:id
-   * Retourne un élève par son id.
-   */
   getEleveById: async (req, res) => {
-    // TODO : Extraire id de req.params
-    // TODO : Appeler EleveModel.findById(id) → 404 si null
-    throw new Error("Non implémenté");
+    try {
+      const eleve = await EleveModel.findById(req.params.id);
+      if (!eleve) return res.status(404).json({ message: "Élève non trouvé" });
+      res.status(200).json(eleve);
+    } catch (error) {
+      res.status(500).json({ message: "Erreur serveur", error: error.message });
+    }
   },
 
-  /**
-   * GET /api/eleves/classe/:idClasse
-   * Retourne tous les élèves d'une classe.
-   */
   getElevesByClasse: async (req, res) => {
-    // TODO : Extraire idClasse
-    // TODO : Vérifier existence de la classe → 404
-    // TODO : Appeler EleveModel.findByClasse(idClasse)
-    throw new Error("Non implémenté");
+    try {
+      const { idClasse } = req.params;
+      const eleves = await EleveModel.findByClasse(idClasse);
+      res.status(200).json(eleves);
+    } catch (error) {
+      res.status(500).json({ message: "Erreur serveur", error: error.message });
+    }
   },
 
-  /**
-   * POST /api/eleves
-   * Crée un nouvel élève.
-   * Body attendu : { nom, prenoms, numero_pere, email_pere, adress,
-   *                  date_naissance, lieu_naissance, sexe, id_classe }
-   */
   createEleve: async (req, res) => {
-    // TODO : Extraire et valider tous les champs
-    // TODO : Valider que sexe est "M" ou "F"
-    // TODO : Vérifier existence de la classe → 404
-    // TODO : Appeler EleveModel.create(data)
-    // TODO : Répondre 201
-    throw new Error("Non implémenté");
+    try {
+      const { nom, prenoms, sexe, id_classe } = req.body;
+
+      // Validation basique
+      if (!nom || !prenoms || !sexe) {
+        return res.status(400).json({ message: "Nom, prénoms et sexe sont obligatoires" });
+      }
+
+      if (!['M', 'F'].includes(sexe)) {
+        return res.status(400).json({ message: "Le sexe doit être 'M' ou 'F'" });
+      }
+
+      const nouvelEleve = await EleveModel.create(req.body);
+      res.status(201).json({ message: "Élève créé avec succès", data: nouvelEleve });
+    } catch (error) {
+      res.status(500).json({ message: "Erreur lors de la création", error: error.message });
+    }
   },
 
-  /**
-   * PUT /api/eleves/:id
-   * Met à jour un élève.
-   */
   updateEleve: async (req, res) => {
-    // TODO : Extraire id et body
-    // TODO : Vérifier existence élève → 404
-    // TODO : Si id_classe fourni, vérifier existence classe
-    // TODO : Appeler EleveModel.update(id, data)
-    throw new Error("Non implémenté");
+    try {
+      const { id } = req.params;
+      const existant = await EleveModel.findById(id);
+      
+      if (!existant) {
+        return res.status(404).json({ message: "Élève introuvable" });
+      }
+
+      const updated = await EleveModel.update(id, req.body);
+      res.status(200).json({ message: "Mise à jour réussie", data: updated });
+    } catch (error) {
+      res.status(500).json({ message: "Erreur lors de la modification", error: error.message });
+    }
   },
 
-  /**
-   * DELETE /api/eleves/:id
-   * Supprime un élève.
-   */
   deleteEleve: async (req, res) => {
-    // TODO : Extraire id
-    // TODO : Vérifier existence → 404
-    // TODO : Appeler EleveModel.delete(id)
-    throw new Error("Non implémenté");
+    try {
+      const success = await EleveModel.delete(req.params.id);
+      if (!success) return res.status(404).json({ message: "Élève non trouvé" });
+      
+      res.status(200).json({ message: "Élève supprimé définitivement" });
+    } catch (error) {
+      res.status(500).json({ message: "Erreur lors de la suppression", error: error.message });
+    }
   },
 };
 

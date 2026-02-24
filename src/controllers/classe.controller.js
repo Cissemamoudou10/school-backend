@@ -12,23 +12,31 @@ const ClasseController = {
    * Retourne la liste de toutes les classes.
    */
   getAllClasses: async (req, res) => {
-    // TODO : Appeler ClasseModel.findAll()
-    // TODO : Répondre avec res.status(200).json({ success: true, data: ... })
-    // TODO : Gérer les erreurs avec try/catch et res.status(500)
-    throw new Error("Non implémenté");
+    try {
+      const classes = await ClasseModel.findAll();
+      return res.status(200).json({ success: true, data: classes });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: "Erreur serveur", error: error.message });
+    }
   },
 
   /**
    * GET /api/classes/:id
    * Retourne une classe par son id.
-   * Si non trouvée → 404
    */
   getClasseById: async (req, res) => {
-    // TODO : Extraire req.params.id
-    // TODO : Appeler ClasseModel.findById(id)
-    // TODO : Si null → res.status(404).json({ message: "Classe non trouvée" })
-    // TODO : Sinon → res.status(200).json({ success: true, data: classe })
-    throw new Error("Non implémenté");
+    try {
+      const { id } = req.params;
+      const classe = await ClasseModel.findById(id);
+
+      if (!classe) {
+        return res.status(404).json({ success: false, message: `Classe #${id} introuvable` });
+      }
+
+      return res.status(200).json({ success: true, data: classe });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: "Erreur serveur", error: error.message });
+    }
   },
 
   /**
@@ -37,11 +45,19 @@ const ClasseController = {
    * Body attendu : { libelle }
    */
   createClasse: async (req, res) => {
-    // TODO : Extraire req.body
-    // TODO : Valider que libelle est présent (sinon 400)
-    // TODO : Appeler ClasseModel.create(data)
-    // TODO : Répondre avec 201 et les données créées
-    throw new Error("Non implémenté");
+    try {
+      const { libelle } = req.body;
+
+      // Validation
+      if (!libelle || libelle.trim() === "") {
+        return res.status(400).json({ success: false, message: "Le champ libelle est obligatoire" });
+      }
+
+      const classe = await ClasseModel.create({ libelle: libelle.trim() });
+      return res.status(201).json({ success: true, data: classe });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: "Erreur serveur", error: error.message });
+    }
   },
 
   /**
@@ -50,11 +66,26 @@ const ClasseController = {
    * Body attendu : { libelle }
    */
   updateClasse: async (req, res) => {
-    // TODO : Extraire id depuis req.params et data depuis req.body
-    // TODO : Vérifier que la classe existe (findById) → 404 si non
-    // TODO : Appeler ClasseModel.update(id, data)
-    // TODO : Répondre avec 200
-    throw new Error("Non implémenté");
+    try {
+      const { id } = req.params;
+      const { libelle } = req.body;
+
+      // Validation
+      if (!libelle || libelle.trim() === "") {
+        return res.status(400).json({ success: false, message: "Le champ libelle est obligatoire" });
+      }
+
+      // Vérifier que la classe existe
+      const existing = await ClasseModel.findById(id);
+      if (!existing) {
+        return res.status(404).json({ success: false, message: `Classe #${id} introuvable` });
+      }
+
+      const classe = await ClasseModel.update(id, { libelle: libelle.trim() });
+      return res.status(200).json({ success: true, data: classe });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: "Erreur serveur", error: error.message });
+    }
   },
 
   /**
@@ -62,11 +93,23 @@ const ClasseController = {
    * Supprime une classe.
    */
   deleteClasse: async (req, res) => {
-    // TODO : Extraire id depuis req.params
-    // TODO : Vérifier que la classe existe → 404 si non
-    // TODO : Appeler ClasseModel.delete(id)
-    // TODO : Répondre avec 200 et un message de confirmation
-    throw new Error("Non implémenté");
+    try {
+      const { id } = req.params;
+
+      // Vérifier que la classe existe
+      const existing = await ClasseModel.findById(id);
+      if (!existing) {
+        return res.status(404).json({ success: false, message: `Classe #${id} introuvable` });
+      }
+
+      await ClasseModel.delete(id);
+      return res.status(200).json({
+        success: true,
+        message: `Classe "${existing.libelle}" supprimée avec succès`,
+      });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: "Erreur serveur", error: error.message });
+    }
   },
 };
 
