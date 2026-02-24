@@ -26,45 +26,24 @@ const AdminController = {
 
   createAdmin: async (req, res) => {
     try {
-      const { nom, prenoms, numero, email, adress } = req.body;
+      const { nom, prenoms, email } = req.body;
 
-      // Validation des champs obligatoires
+      // Validation minimale
       if (!nom || !prenoms || !email) {
-        return res.status(400).json({
-          success: false,
-          message: "Les champs nom, prenoms et email sont obligatoires",
-        });
+        return res.status(400).json({ message: "Nom, prénoms et email sont obligatoires" });
       }
 
-      // Vérifier si l'email existe déjà
-      const existingAdmin = await AdminModel.findByEmail(email);
-      if (existingAdmin) {
-        return res.status(409).json({
-          success: false,
-          message: "Un admin avec cet email existe déjà",
-        });
-      }
+      // Vérification unicité email
+      const existing = await AdminModel.findByEmail(email);
+      if (existing) return res.status(409).json({ message: "Cet email est déjà utilisé" });
 
-      // Créer l'admin
-      const newAdmin = await AdminModel.create({ nom, prenoms, numero, email, adress });
-
-      return res.status(201).json({
-        success: true,
-        data: newAdmin,
-      });
+      const newAdmin = await AdminModel.create(req.body);
+      res.status(201).json(newAdmin);
     } catch (error) {
-      return res.status(500).json({
-        success: false,
-        message: error.message || "Erreur interne du serveur",
-      });
+      res.status(500).json({ message: "Erreur lors de la création", error: error.message });
     }
   },
 
-  /**
-   * PUT /api/admins/:id
-   * Met à jour un administrateur.
-   * Body attendu : { nom, prenoms, numero, email, adress }
-   */
   updateAdmin: async (req, res) => {
     try {
       const { id } = req.params;

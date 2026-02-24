@@ -22,15 +22,9 @@ const AdminModel = {
       "INSERT INTO admin (nom, prenoms, numero, email, adress, date_creation) VALUES (?, ?, ?, ?, ?, NOW())",
       [nom, prenoms, numero, email, adress]
     );
-    return { id: result.insertId, nom, prenoms, numero, email, adress };
+    return { id: result.insertId, ...data };
   },
 
-  /**
-   * Met à jour un administrateur.
-   * @param {number} id
-   * @param {Object} data - { nom, prenoms, numero, email, adress }
-   * @returns {Promise<Object>}
-   */
   update: async (id, data) => {
     const { nom, prenoms, numero, email, adress } = data;
     await pool.query(
