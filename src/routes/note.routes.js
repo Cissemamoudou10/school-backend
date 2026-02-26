@@ -1,58 +1,60 @@
-// ============================================
-//  ROUTES : NOTE
-//  Fichier : src/routes/note.routes.js
-// ============================================
-
 const express = require("express");
-const router  = express.Router();
+const router = express.Router();
+const { body, param } = require("express-validator");
+
 const NoteController = require("../controllers/note.controller");
+const { verifyToken } = require("../middlewares/auth.middleware");
+const { validate } = require("../middlewares/validate.middleware");
+
+// 🛡️ Protection : Il faut être connecté pour voir ou modifier des notes
+router.use(verifyToken);
 
 /**
- * @route   GET /api/notes
- * @desc    Lister toutes les notes
+ * 📊 CONSULTATION
  */
 router.get("/", NoteController.getAllNotes);
 
-/**
- * @route   GET /api/notes/eleve/:idEleve
- * @desc    Notes d'un élève spécifique
- * IMPORTANT : Routes spécifiques AVANT /:id
- */
-router.get("/eleve/:idEleve", NoteController.getNotesByEleve);
+router.get("/eleve/:idEleve", [
+    param("idEleve").isInt().withMessage("ID élève invalide"),
+    validate
+], NoteController.getNotesByEleve);
 
-/**
- * @route   GET /api/notes/matiere/:idMatiere
- * @desc    Notes d'une matière spécifique
- */
-router.get("/matiere/:idMatiere", NoteController.getNotesByMatiere);
+router.get("/matiere/:idMatiere", [
+    param("idMatiere").isInt().withMessage("ID matière invalide"),
+    validate
+], NoteController.getNotesByMatiere);
 
-/**
- * @route   GET /api/notes/bulletin/:idEleve
- * @desc    Bulletin complet d'un élève (notes + moyenne générale)
- */
 router.get("/bulletin/:idEleve", NoteController.getBulletinEleve);
 
-/**
- * @route   GET /api/notes/:id
- * @desc    Obtenir une note par son id
- */
 router.get("/:id", NoteController.getNoteById);
 
 /**
- * @route   POST /api/notes
- * @desc    Ajouter une note
+ * ✍️ ACTIONS (Généralement réservées aux Profs et Admins)
  */
-router.post("/", NoteController.createNote);
+
+/**
+ * @route   POST /api/notes
+ */
+router.post("/", [
+    body("valeur")
+        .isFloat({ min: 0, max: 20 })
+        .withMessage("La note doit être comprise entre 0 et 20"),
+    body("eleve_id").isInt().withMessage("Un élève valide est requis"),
+    body("matiere_id").isInt().withMessage("Une matière valide est requise"),
+    body("date_note").optional().isDate().withMessage("Format de date invalide"),
+    validate
+], NoteController.createNote);
 
 /**
  * @route   PUT /api/notes/:id
- * @desc    Modifier une note
  */
-router.put("/:id", NoteController.updateNote);
+router.put("/:id", [
+    body("valeur").optional().isFloat({ min: 0, max: 20 }),
+    validate
+], NoteController.updateNote);
 
 /**
  * @route   DELETE /api/notes/:id
- * @desc    Supprimer une note
  */
 router.delete("/:id", NoteController.deleteNote);
 

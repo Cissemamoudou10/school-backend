@@ -1,46 +1,48 @@
-// ============================================
-//  ROUTES : CLASSE
-//  Fichier : src/routes/classe.routes.js
-// ============================================
-
 const express = require("express");
-const router  = express.Router();
+const router = express.Router();
+const { body } = require("express-validator");
+
 const ClasseController = require("../controllers/classe.controller");
-// const { verifyToken } = require("../middlewares/auth.middleware");
+const { verifyToken } = require("../middlewares/auth.middleware");
+const { validate } = require("../middlewares/validate.middleware");
+// const { authorize } = require("../middlewares/role.middleware"); // Si vous avez créé le middleware de rôle
 
 /**
- * @route   GET /api/classes
- * @desc    Lister toutes les classes
- * @access  Public
+ * 🔓 ROUTES PUBLIQUES
+ * Tout le monde peut voir la liste des classes (utile pour l'affichage général)
  */
 router.get("/", ClasseController.getAllClasses);
+router.get("/:id", ClasseController.getClasseById);
 
 /**
- * @route   GET /api/classes/:id
- * @desc    Obtenir une classe par son id
- * @access  Public
+ * 🔐 ROUTES PRIVÉES (Admin uniquement)
+ * On applique verifyToken sur toutes les routes suivantes
  */
-router.get("/:id", ClasseController.getClasseById);
-//modification de la route pour éviter les conflits avec les autres routes (ex: /api/classes/1 vs /api/classes/1/eleves)
+router.use(verifyToken); 
+
 /**
  * @route   POST /api/classes
  * @desc    Créer une nouvelle classe
- * @access  Privé (Admin) — décommenter verifyToken quand implémenté
  */
-router.post("/", /* verifyToken, */ ClasseController.createClasse);
+router.post("/", [
+    body("nom")
+        .trim()
+        .notEmpty().withMessage("Le nom de la classe est obligatoire")
+        .isLength({ min: 2, max: 20 }).withMessage("Le nom doit faire entre 2 et 20 caractères"),
+    validate
+], ClasseController.createClasse);
 
 /**
  * @route   PUT /api/classes/:id
- * @desc    Modifier une classe
- * @access  Privé (Admin)
  */
-router.put("/:id", /* verifyToken, */ ClasseController.updateClasse);
+router.put("/:id", [
+    body("nom").optional().trim().notEmpty().withMessage("Le nom ne peut pas être vide"),
+    validate
+], ClasseController.updateClasse);
 
 /**
  * @route   DELETE /api/classes/:id
- * @desc    Supprimer une classe
- * @access  Privé (Admin)
  */
-router.delete("/:id", /* verifyToken, */ ClasseController.deleteClasse);
+router.delete("/:id", ClasseController.deleteClasse);
 
 module.exports = router;

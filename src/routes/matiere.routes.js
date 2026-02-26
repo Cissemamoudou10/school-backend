@@ -1,47 +1,55 @@
-// ============================================
-//  ROUTES : MATIERE
-//  Fichier : src/routes/matiere.routes.js
-// ============================================
-
 const express = require("express");
-const router  = express.Router();
+const router = express.Router();
+const { body, param } = require("express-validator");
+
 const MatiereController = require("../controllers/matiere.controller");
+const { verifyToken } = require("../middlewares/auth.middleware");
+const { validate } = require("../middlewares/validate.middleware");
 
 /**
- * @route   GET /api/matieres
- * @desc    Lister toutes les matières
+ * 🔓 ROUTES PUBLIQUES (ou accessibles à tous les connectés)
+ * Élèves, Profs et Admins doivent pouvoir consulter les matières.
  */
 router.get("/", MatiereController.getAllMatieres);
 
-/**
- * @route   GET /api/matieres/classe/:idClasse
- * @desc    Lister les matières d'une classe
- * IMPORTANT : Cette route doit être déclarée AVANT /:id
- * pour éviter que "classe" soit interprété comme un id.
- */
-router.get("/classe/:idClasse", MatiereController.getMatieresByClasse);
+router.get("/classe/:idClasse", [
+    param("idClasse").isInt().withMessage("L'ID de la classe doit être un nombre"),
+    validate
+], MatiereController.getMatieresByClasse);
 
-/**
- * @route   GET /api/matieres/:id
- * @desc    Obtenir une matière par son id
- */
 router.get("/:id", MatiereController.getMatiereById);
 
 /**
- * @route   POST /api/matieres
- * @desc    Créer une matière
+ * 🔐 ROUTES PRIVÉES (Admin uniquement)
+ * La création et la modification du programme scolaire sont réservées aux admins.
  */
-router.post("/", MatiereController.createMatiere);
+router.use(verifyToken);
+// Idéalement ici : router.use(authorize(["admin"]));
+
+/**
+ * @route   POST /api/matieres
+ */
+router.post("/", [
+    body("nom")
+        .trim()
+        .notEmpty().withMessage("Le nom de la matière est requis")
+        .isLength({ min: 2 }).withMessage("Le nom doit être explicite (ex: Mathématiques)"),
+    body("coefficient")
+        .optional()
+        .isFloat({ min: 1, max: 10 }).withMessage("Le coefficient doit être compris entre 1 et 10"),
+    validate
+], MatiereController.createMatiere);
 
 /**
  * @route   PUT /api/matieres/:id
- * @desc    Modifier une matière
  */
-router.put("/:id", MatiereController.updateMatiere);
+router.put("/:id", [
+    body("nom").optional().trim().notEmpty(),
+    validate
+], MatiereController.updateMatiere);
 
 /**
  * @route   DELETE /api/matieres/:id
- * @desc    Supprimer une matière
  */
 router.delete("/:id", MatiereController.deleteMatiere);
 
