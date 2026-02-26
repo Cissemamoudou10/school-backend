@@ -40,7 +40,7 @@ router.post("/", [
     validate
 ], MatiereController.createMatiere);
 
-/**
+/*
  * @route   PUT /api/matieres/:id
  */
 router.put("/:id", [
