@@ -20,14 +20,42 @@ const jwt = require("jsonwebtoken");
  * @param {Function} next - Passe au middleware suivant
  */
 const verifyToken = (req, res, next) => {
-  // TODO : Récupérer le header Authorization depuis req.headers["authorization"]
-  // TODO : Vérifier que le header existe → sinon 401 "Token manquant"
-  // TODO : Extraire le token (format : "Bearer <token>") → split(" ")[1]
-  // TODO : Vérifier le token avec jwt.verify(token, process.env.JWT_SECRET)
-  //        → En cas d'erreur → 401 "Token invalide ou expiré"
-  // TODO : Attacher le payload décodé à req.user pour les controllers suivants
-  // TODO : Appeler next() pour continuer
-  throw new Error("Non implémenté");
+  try {
+    // Récupérer le header Authorization
+    const authHeader = req.headers["authorization"];
+
+    // Vérifier que le header existe
+    if (!authHeader) {
+      return res.status(401).json({
+        success: false,
+        message: "Token manquant",
+      });
+    }
+
+    // Extraire le token (format : "Bearer <token>")
+    const token = authHeader.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Token manquant",
+      });
+    }
+
+    // Vérifier et décoder le token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Attacher le payload décodé à req.user pour les controllers suivants
+    req.user = decoded;
+
+    // Passer au middleware suivant
+    next();
+  } catch (err) {
+    return res.status(401).json({
+      success: false,
+      message: "Token invalide ou expiré",
+    });
+  }
 };
 
 module.exports = { verifyToken };
