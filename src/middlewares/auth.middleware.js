@@ -1,33 +1,49 @@
-// ============================================
-//  MIDDLEWARE : AUTHENTIFICATION JWT
-//  Fichier : src/middlewares/auth.middleware.js
-// ============================================
-
 const jwt = require("jsonwebtoken");
 
 /**
  * Middleware qui vérifie la présence et la validité du token JWT
- * dans le header Authorization de la requête.
- *
- * Usage dans une route :
- *   router.post("/", verifyToken, MonController.maFonction);
- *
- * Le token doit être envoyé ainsi :
- *   Authorization: Bearer <token>
- *
- * @param {Object} req  - La requête HTTP
- * @param {Object} res  - La réponse HTTP
- * @param {Function} next - Passe au middleware suivant
  */
 const verifyToken = (req, res, next) => {
-  // TODO : Récupérer le header Authorization depuis req.headers["authorization"]
-  // TODO : Vérifier que le header existe → sinon 401 "Token manquant"
-  // TODO : Extraire le token (format : "Bearer <token>") → split(" ")[1]
-  // TODO : Vérifier le token avec jwt.verify(token, process.env.JWT_SECRET)
-  //        → En cas d'erreur → 401 "Token invalide ou expiré"
-  // TODO : Attacher le payload décodé à req.user pour les controllers suivants
-  // TODO : Appeler next() pour continuer
-  throw new Error("Non implémenté");
+  // 1. Récupérer le header Authorization
+  const authHeader = req.headers["authorization"];
+
+  // 2. Vérifier que le header existe
+  if (!authHeader) {
+    return res.status(401).json({ 
+      success: false, 
+      message: "Accès refusé. Aucun token fourni." 
+    });
+  }
+
+  // 3. Extraire le token (format : "Bearer <token>")
+  // On vérifie aussi que le format commence bien par "Bearer"
+  const parts = authHeader.split(" ");
+  
+  if (parts.length !== 2 || parts[0] !== "Bearer") {
+    return res.status(401).json({ 
+      success: false, 
+      message: "Format du token invalide (attendu: 'Bearer <token>')" 
+    });
+  }
+
+  const token = parts[1];
+
+  try {
+    // 4. Vérifier le token avec la clé secrète
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // 5. Attacher le payload décodé (ex: id, role) à req.user
+    req.user = decoded;
+
+    // 6. Continuer vers le prochain middleware ou controller
+    next();
+  } catch (err) {
+    // En cas d'erreur (token expiré, modifié, etc.)
+    return res.status(401).json({ 
+      success: false, 
+      message: "Token invalide ou expiré." 
+    });
+  }
 };
 
 module.exports = { verifyToken };

@@ -7,15 +7,14 @@
 const { pool } = require("../config/db");
 
 const NoteModel = {
-
   // Toutes les notes avec nom élève et matière
   findAll: async () => {
     const [rows] = await pool.query(`
       SELECT n.id, n.valeur,
-             n.id_eleve, CONCAT(e.nom, ' ', e.prenoms) AS eleve,
+             n.id_eleve, CONCAT(u.nom, ' ', u.prenoms) AS eleve,
              n.id_matiere, m.nom AS matiere
       FROM note n
-      JOIN eleve   e ON n.id_eleve   = e.id
+      JOIN utilisateur u ON n.id_eleve   = u.id AND u.role = 'eleve'
       JOIN matiere m ON n.id_matiere = m.id
       ORDER BY n.id
     `);
@@ -24,41 +23,50 @@ const NoteModel = {
 
   // Une note par ID
   findById: async (id) => {
-    const [rows] = await pool.query(`
+    const [rows] = await pool.query(
+      `
       SELECT n.id, n.valeur,
-             n.id_eleve, CONCAT(e.nom, ' ', e.prenoms) AS eleve,
+             n.id_eleve, CONCAT(u.nom, ' ', u.prenoms) AS eleve,
              n.id_matiere, m.nom AS matiere
       FROM note n
-      JOIN eleve   e ON n.id_eleve   = e.id
+      JOIN utilisateur u ON n.id_eleve   = u.id AND u.role = 'eleve'
       JOIN matiere m ON n.id_matiere = m.id
       WHERE n.id = ?
-    `, [id]);
+    `,
+      [id],
+    );
     return rows[0] ?? null;
   },
 
   // Notes d'un élève
   findByEleve: async (idEleve) => {
-    const [rows] = await pool.query(`
+    const [rows] = await pool.query(
+      `
       SELECT n.id, n.valeur,
              n.id_matiere, m.nom AS matiere
       FROM note n
       JOIN matiere m ON n.id_matiere = m.id
       WHERE n.id_eleve = ?
       ORDER BY m.nom
-    `, [idEleve]);
+    `,
+      [idEleve],
+    );
     return rows;
   },
 
   // Notes d'une matière
   findByMatiere: async (idMatiere) => {
-    const [rows] = await pool.query(`
+    const [rows] = await pool.query(
+      `
       SELECT n.id, n.valeur,
              n.id_eleve, CONCAT(e.nom, ' ', e.prenoms) AS eleve
       FROM note n
       JOIN eleve e ON n.id_eleve = e.id
       WHERE n.id_matiere = ?
       ORDER BY e.nom, e.prenoms
-    `, [idMatiere]);
+    `,
+      [idMatiere],
+    );
     return rows;
   },
 
@@ -78,7 +86,7 @@ const NoteModel = {
     const { valeur, id_eleve, id_matiere } = data;
     const [result] = await pool.query(
       `INSERT INTO note (valeur, id_eleve, id_matiere) VALUES (?, ?, ?)`,
-      [valeur, id_eleve, id_matiere]
+      [valeur, id_eleve, id_matiere],
     );
     return await NoteModel.findById(result.insertId);
   },
