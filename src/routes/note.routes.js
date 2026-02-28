@@ -14,15 +14,17 @@ router.use(verifyToken);
  */
 router.get("/", NoteController.getAllNotes);
 
-router.get("/eleve/:idEleve", [
-    param("idEleve").isInt().withMessage("ID élève invalide"),
-    validate
-], NoteController.getNotesByEleve);
+router.get(
+  "/eleve/:idEleve",
+  [param("idEleve").isInt().withMessage("ID élève invalide"), validate],
+  NoteController.getNotesByEleve,
+);
 
-router.get("/matiere/:idMatiere", [
-    param("idMatiere").isInt().withMessage("ID matière invalide"),
-    validate
-], NoteController.getNotesByMatiere);
+router.get(
+  "/matiere/:idMatiere",
+  [param("idMatiere").isInt().withMessage("ID matière invalide"), validate],
+  NoteController.getNotesByMatiere,
+);
 
 router.get("/bulletin/:idEleve", NoteController.getBulletinEleve);
 
@@ -35,23 +37,27 @@ router.get("/:id", NoteController.getNoteById);
 /**
  * @route   POST /api/notes
  */
-router.post("/", [
+router.post(
+  "/",
+  [
     body("valeur")
-        .isFloat({ min: 0, max: 20 })
-        .withMessage("La note doit être comprise entre 0 et 20"),
-    body("eleve_id").isInt().withMessage("Un élève valide est requis"),
-    body("matiere_id").isInt().withMessage("Une matière valide est requise"),
-    body("date_note").optional().isDate().withMessage("Format de date invalide"),
-    validate
-], NoteController.createNote);
+      .isFloat({ min: 0, max: 20 })
+      .withMessage("La note doit être comprise entre 0 et 20"),
+    body("id_eleve").isInt().withMessage("Un élève valide est requis"),
+    body("id_matiere").isInt().withMessage("Une matière valide est requise"),
+    validate,
+  ],
+  NoteController.createNote,
+);
 
 /**
  * @route   PUT /api/notes/:id
  */
-router.put("/:id", [
-    body("valeur").optional().isFloat({ min: 0, max: 20 }),
-    validate
-], NoteController.updateNote);
+router.put(
+  "/:id",
+  [body("valeur").optional().isFloat({ min: 0, max: 20 }), validate],
+  NoteController.updateNote,
+);
 
 /**
  * @route   DELETE /api/notes/:id

@@ -18,27 +18,41 @@ router.get("/:id", ClasseController.getClasseById);
  * 🔐 ROUTES PRIVÉES (Admin uniquement)
  * On applique verifyToken sur toutes les routes suivantes
  */
-router.use(verifyToken); 
+router.use(verifyToken);
 
 /**
  * @route   POST /api/classes
  * @desc    Créer une nouvelle classe
  */
-router.post("/", [
-    body("nom")
-        .trim()
-        .notEmpty().withMessage("Le nom de la classe est obligatoire")
-        .isLength({ min: 2, max: 20 }).withMessage("Le nom doit faire entre 2 et 20 caractères"),
-    validate
-], ClasseController.createClasse);
+router.post(
+  "/",
+  [
+    body("libelle")
+      .trim()
+      .notEmpty()
+      .withMessage("Le libellé de la classe est obligatoire")
+      .isLength({ min: 2, max: 50 })
+      .withMessage("Le libellé doit faire entre 2 et 50 caractères"),
+    validate,
+  ],
+  ClasseController.createClasse,
+);
 
 /**
  * @route   PUT /api/classes/:id
  */
-router.put("/:id", [
-    body("nom").optional().trim().notEmpty().withMessage("Le nom ne peut pas être vide"),
-    validate
-], ClasseController.updateClasse);
+router.put(
+  "/:id",
+  [
+    body("libelle")
+      .optional()
+      .trim()
+      .notEmpty()
+      .withMessage("Le libellé ne peut pas être vide"),
+    validate,
+  ],
+  ClasseController.updateClasse,
+);
 
 /**
  * @route   DELETE /api/classes/:id

@@ -10,12 +10,11 @@ require("dotenv").config();
 const { testConnection } = require("./config/db");
 
 // Import des routes
-const adminRoutes    = require("./routes/admin.routes");
-const eleveRoutes    = require("./routes/eleve.routes");
-const profRoutes     = require("./routes/prof.routes");
-const classeRoutes   = require("./routes/classe.routes");
-const matiereRoutes  = require("./routes/matiere.routes");
-const noteRoutes     = require("./routes/note.routes");
+const authRoutes = require("./routes/auth.routes");
+const utilisateurRoutes = require("./routes/utilisateur.routes");
+const classeRoutes = require("./routes/classe.routes");
+const matiereRoutes = require("./routes/matiere.routes");
+const noteRoutes = require("./routes/note.routes");
 
 // Import des middlewares globaux
 const { errorHandler } = require("./middlewares/error.middleware");
@@ -28,12 +27,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 //http://localhost:3000/api/admins/ -- post
 // ── Routes ───────────────────────────────────
-app.use("/api/admins",   adminRoutes);
-app.use("/api/eleves",   eleveRoutes);
-app.use("/api/profs",    profRoutes);
-app.use("/api/classes",  classeRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/utilisateurs", utilisateurRoutes);
+app.use("/api/classes", classeRoutes);
 app.use("/api/matieres", matiereRoutes);
-app.use("/api/notes",    noteRoutes);
+app.use("/api/notes", noteRoutes);
 
 // ── Route de test (health check) ─────────────
 app.get("/", (req, res) => {

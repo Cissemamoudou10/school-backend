@@ -1,112 +1,88 @@
 -- ============================================
---  SCRIPT SQL - ÉCOLE PRIMAIRE
---  Fichier : database.sql
---  Description : Création de la base de données
---                et de toutes les tables
+--  SCRIPT SQL MIS À JOUR - ÉCOLE PRIMAIRE
 -- ============================================
 
--- 1. Création de la base
-CREATE DATABASE IF NOT EXISTS ecole_primaire 
-CHARACTER SET utf8mb4 
-COLLATE utf8mb4_unicode_ci;
-
--- 2. Suppression et recréation propre de l'utilisateur
-DROP USER IF EXISTS 'ecole_user'@'localhost';
-CREATE USER 'ecole_user'@'localhost' IDENTIFIED BY 'ecole';
-
--- 3. Attribution des droits
-GRANT ALL PRIVILEGES ON ecole_primaire.* TO 'ecole_user'@'localhost';
-FLUSH PRIVILEGES;
-
--- 4. Utilisation et création de table
 USE ecole_primaire;
 
--- ── Table : classe ──────────────────────────
-CREATE TABLE IF NOT EXISTS classe (
+-- 1. Nettoyage (Ordre inversé pour les clés étrangères)
+DROP TABLE IF EXISTS note;
+DROP TABLE IF EXISTS matiere;
+DROP TABLE IF EXISTS eleve;
+DROP TABLE IF EXISTS prof;
+DROP TABLE IF EXISTS admin;
+DROP TABLE IF EXISTS utilisateur;
+DROP TABLE IF EXISTS classe;
+
+-- 2. Création de la table classe
+CREATE TABLE classe (
   id      INT AUTO_INCREMENT PRIMARY KEY,
   libelle VARCHAR(50) NOT NULL
 );
 
--- ── Table : admin ───────────────────────────
-CREATE TABLE IF NOT EXISTS admin (
+-- 3. Création de la table utilisateur (Admin, Prof, Eleve centralisés)
+CREATE TABLE utilisateur (
   id             INT AUTO_INCREMENT PRIMARY KEY,
   nom            VARCHAR(100) NOT NULL,
   prenoms        VARCHAR(150) NOT NULL,
-  numero         VARCHAR(20),
-  email          VARCHAR(100) NOT NULL UNIQUE,
-  adress         VARCHAR(255),
-  date_creation  DATETIME DEFAULT NOW()
-);
-
--- ── Table : prof ────────────────────────────
-CREATE TABLE IF NOT EXISTS prof (
-  id             INT AUTO_INCREMENT PRIMARY KEY,
-  nom            VARCHAR(100) NOT NULL,
-  prenoms        VARCHAR(150) NOT NULL,
-  numero         VARCHAR(20),
-  email          VARCHAR(100) NOT NULL UNIQUE,
+  numeroTel      VARCHAR(20) NOT NULL UNIQUE,
+  password       VARCHAR(255) NOT NULL,
+  role           ENUM('admin', 'prof', 'eleve') NOT NULL,
+  email          VARCHAR(100) UNIQUE,
   adress         VARCHAR(255),
   date_creation  DATETIME DEFAULT NOW(),
+  -- Champs spécifiques
   id_classe      INT,
+  date_naissance DATE,
+  sexe           ENUM('M', 'F'),
   FOREIGN KEY (id_classe) REFERENCES classe(id) ON DELETE SET NULL
 );
 
--- ── Table : eleve ───────────────────────────
-CREATE TABLE IF NOT EXISTS eleve (
-  id              INT AUTO_INCREMENT PRIMARY KEY,
-  nom             VARCHAR(100) NOT NULL,
-  prenoms         VARCHAR(150) NOT NULL,
-  numero_pere     VARCHAR(20),
-  email_pere      VARCHAR(100),
-  adress          VARCHAR(255),
-  date_naissance  DATE NOT NULL,
-  lieu_naissance  VARCHAR(150),
-  date_creation   DATETIME DEFAULT NOW(),
-  sexe            ENUM('M', 'F') NOT NULL,
-  id_classe       INT,
+-- 4. Création de la table matiere
+CREATE TABLE matiere (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  nom        VARCHAR(100) NOT NULL,
+  id_classe  INT,
   FOREIGN KEY (id_classe) REFERENCES classe(id) ON DELETE SET NULL
 );
 
--- ── Table : matiere ─────────────────────────
-CREATE TABLE IF NOT EXISTS matiere (
-  id        INT AUTO_INCREMENT PRIMARY KEY,
-  nom       VARCHAR(100) NOT NULL,
-  id_classe INT,
-  FOREIGN KEY (id_classe) REFERENCES classe(id) ON DELETE SET NULL
-);
-
--- ── Table : note ────────────────────────────
-CREATE TABLE IF NOT EXISTS note (
+-- 5. Création de la table note
+CREATE TABLE note (
   id         INT AUTO_INCREMENT PRIMARY KEY,
   valeur     DECIMAL(5, 2) NOT NULL CHECK (valeur >= 0 AND valeur <= 20),
   id_eleve   INT NOT NULL,
   id_matiere INT NOT NULL,
-  FOREIGN KEY (id_eleve)   REFERENCES eleve(id)   ON DELETE CASCADE,
-  FOREIGN KEY (id_matiere) REFERENCES matiere(id)  ON DELETE CASCADE
+  FOREIGN KEY (id_eleve)   REFERENCES utilisateur(id) ON DELETE CASCADE,
+  FOREIGN KEY (id_matiere) REFERENCES matiere(id)   ON DELETE CASCADE
 );
 
 -- ============================================
---  DONNÉES DE TEST (optionnel)
+--  INSERTION DES DONNÉES DE TEST
 -- ============================================
 
-INSERT INTO classe (libelle) VALUES
-  ('CP'), ('CE1'), ('CE2'), ('CM1'), ('CM2');
+-- Classes
+INSERT INTO classe (libelle) VALUES ('CP'), ('CE1'), ('CE2'), ('CM1'), ('CM2');
 
-INSERT INTO admin (nom, prenoms, email, numero, adress) VALUES
-  ('Dupont', 'Marie Claire', 'admin@ecole.ci', '+225 07 00 00 00', 'Abidjan Plateau');
+-- Utilisateurs (Anciens Admins)
+INSERT INTO utilisateur (nom, prenoms, email, numeroTel, password, adress, role) VALUES
+('Dupont', 'Marie Claire', 'admin@ecole.ci', '+225 07 00 00 00', '123456', 'Abidjan Plateau', 'admin');
 
-INSERT INTO prof (nom, prenoms, email, numero, id_classe) VALUES
-  ('Kouassi', 'Jean Paul', 'jkouassi@ecole.ci', '+225 05 11 22 33', 1),
-  ('Bamba', 'Aminata', 'abamba@ecole.ci',   '+225 05 44 55 66', 2);
+-- Utilisateurs (Anciens Profs)
+INSERT INTO utilisateur (nom, prenoms, email, numeroTel, password, role, id_classe) VALUES
+('Kouassi', 'Jean Paul', 'jkouassi@ecole.ci', '+225 05 11 22 33', '123456', 'prof', 1),
+('Bamba', 'Aminata', 'abamba@ecole.ci', '+225 05 44 55 66', '123456', 'prof', 2);
 
-INSERT INTO eleve (nom, prenoms, numero_pere, email_pere, date_naissance, lieu_naissance, sexe, id_classe) VALUES
-  ('Koné', 'Ibrahim', '+225 07 99 88 77', 'pere.kone@gmail.com', '2015-03-12', 'Abidjan', 'M', 1),
-  ('Traoré', 'Fatou',  '+225 07 11 22 33', 'pere.traore@gmail.com', '2014-07-25', 'Bouaké', 'F', 2);
+-- Utilisateurs (Anciens Elèves)
+-- Note : Les IDs des élèves seront ici 4 et 5 car ils suivent les admins et profs
+INSERT INTO utilisateur (nom, prenoms, numeroTel, password, email, date_naissance, sexe, id_classe, role) VALUES
+('Koné', 'Ibrahim', '+225 07 99 88 77', '123456', 'pere.kone@gmail.com', '2015-03-12', 'M', 1, 'eleve'),
+('Traoré', 'Fatou', '+225 07 11 22 33', '123456', 'pere.traore@gmail.com', '2014-07-25', 'F', 2, 'eleve');
 
+-- Matières
 INSERT INTO matiere (nom, id_classe) VALUES
-  ('Mathématiques', 1), ('Français', 1),
-  ('Mathématiques', 2), ('Sciences', 2);
+('Mathématiques', 1), ('Français', 1),
+('Mathématiques', 2), ('Sciences', 2);
 
+-- Notes (Attention : id_eleve 4 et 5 correspondent aux élèves insérés plus haut)
 INSERT INTO note (valeur, id_eleve, id_matiere) VALUES
-  (15.5, 1, 1), (12.0, 1, 2),
-  (17.0, 2, 3), (14.5, 2, 4);
+(15.5, 4, 1), (12.0, 4, 2),
+(17.0, 5, 3), (14.5, 5, 4);
